@@ -1,0 +1,39 @@
+datasource db {
+    provider = "sqlite"
+    url      = "file:../dev.db"
+}
+
+generator client {
+    provider    = "cargo prisma"
+    output      = "../src/db.rs"
+    module_path = "crate::db"
+}
+
+model Agent {
+    id            String         @id @default(uuid())
+    name          String
+    key           String         @unique
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    isSelected    Boolean        @default(false)
+    conversations Conversation[]
+}
+
+model Conversation {
+    title     String
+    id        String    @unique
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    messages  Message[]
+    agent     Agent     @relation(fields: [agentKey], references: [key], onDelete: Cascade, onUpdate: Cascade)
+    agentKey  String
+}
+
+model Message {
+    id             String       @id @default(uuid())
+    createdAt      DateTime     @default(now())
+    conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+    conversationId String
+    content        String
+    isFromAgent    Boolean      @default(true)
+}
